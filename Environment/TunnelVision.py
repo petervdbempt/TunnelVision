@@ -84,36 +84,6 @@ class TunnelVision:
 
         return state_index, reward, self.terminated, self.truncated
 
-    def visualize_agent(self, ax):
-        ax.clear()
-
-        # Create grid
-        for i in range(self.rows + 1):
-            ax.plot([i, i], [0, self.cols], 'k-')
-
-        for j in range(self.cols + 1):
-            ax.plot([0, self.rows], [j, j], 'k-')
-
-        # Add patches for toxic gas, inferior reward, and goal
-        for i in range(self.rows):
-            for j in range(self.cols):
-                if self.grid[i, j] == 1:
-                    ax.add_patch(patches.Rectangle((i, j), 1, 1, edgecolor='red', facecolor='none'))
-                elif self.grid[i, j] == 2:
-                    ax.add_patch(patches.Rectangle((i, j), 1, 1, edgecolor='orange', facecolor='none'))
-                elif self.grid[i, j] == 3:
-                    ax.add_patch(patches.Rectangle((i, j), 1, 1, edgecolor='green', facecolor='none'))
-
-        # Add patch for the agent
-        ax.add_patch(patches.Rectangle(self.agent_position, 1, 1, edgecolor='blue', facecolor='none'))
-
-        # Set axis limits and show the plot
-        ax.set_xlim([0, self.rows])
-        ax.set_ylim([0, self.cols])
-        plt.gca().invert_yaxis()  # Invert y-axis to match grid coordinates
-        plt.pause(0.3)  # introduce a delay to update the plot
-        plt.draw()
-
     def reset(self):
         self.agent_position = (0, 0)  # Agent starts in the top-left corner
         self.terminated = False
