@@ -1,4 +1,4 @@
-from Environment.TunnelVision import TunnelVision
+from TunnelVision import TunnelVision
 import numpy as np
 import matplotlib.pyplot as plt
 
