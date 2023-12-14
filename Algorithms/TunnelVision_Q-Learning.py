@@ -180,6 +180,7 @@ if __name__ == "__main__":
     env = TunnelVision(env='Standard')
     num_runs = 1
     num_episodes = 1000000
+
     alpha = 0.5
     gamma = 0.99
     epsilon = 1  # Starting epsilon value
