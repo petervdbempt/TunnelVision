@@ -12,9 +12,9 @@ The action space for the agent is discrete (up, down, right, left) and represent
 # Baselines
 Included in the project are five algorithms to make comparisons with:
 * Q-Learning
-* Regular Q-Learning with exponential epsilon-decay
+  * Regular Q-Learning with exponential epsilon-decay
 * Q-Switching_Blind
-* Q-Learning algorithm that switches modes using a fixed step interval
+  * Q-Learning algorithm that switches modes using a fixed step interval
 * Q-Switching_Blind_Separate
   * Q-Learning algorithm that switches modes using a fixed interval, and separates extrinsic rewards from intrinsic rewards
 * Q-Switching_Informed
