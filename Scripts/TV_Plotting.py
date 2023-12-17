@@ -36,10 +36,14 @@ def plot_rewards(csv_files, labels):
 
 if __name__ == "__main__":
     # Specify the CSV files and labels for each algorithm
-    csv_files = ["TV_Q-Learning_Regular_EVAL.csv", "TV_Q-Switching_Blind_EVAL.csv", "TV_Q-Switching_Blind_Separate_EVAL.csv",
-                 "TV_Q-Switching_Informed_EVAL.csv", "TV_Q-Switching_Informed_Separate_EVAL.csv"]
-    labels = ["Q-Learning", "Q-Switching_Blind", "Q-Switching_Blind_Separate", "Q-Switching_Informed",
-              "Q-Switching_Informed_Separate"]
+    csv_files = ["TV_Q-Learning_Regular_EVAL.csv"]
+    labels = ["Q-Learning"]
 
     # Call the function to plot the data
     plot_rewards(csv_files, labels)
+
+#     csv_files = ["TV_Q-Learning_Regular_EVAL.csv", "TV_Q-Switching_Blind_EVAL.csv",
+#                  "TV_Q-Switching_Blind_Separate_EVAL.csv", "TV_Q-Switching_Informed_EVAL.csv",
+#                  "TV_Q-Switching_Informed_Separate_EVAL.csv"]
+#     labels = ["Q-Learning", "Q-Switching_Blind", "Q-Switching_Blind_Separate", "Q-Switching_Informed",
+#               "Q-Switching_Informed_Separate"]
