@@ -16,6 +16,7 @@ def plot_rewards(csv_files, labels):
 
         std_dev = np.std(data, axis=0)
         average = np.mean(data, axis=0)
+        print(max(average))
 
         plt.fill_between(range(len(average)), average - std_dev, average + std_dev, alpha=0.3)
         plt.plot(average, label=labels[i])

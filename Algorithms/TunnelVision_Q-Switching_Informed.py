@@ -63,6 +63,7 @@ def visualize_visitation_counts(env, visitation_count):
 def q_learning(env, num_episodes, alpha, gamma, epsilon, visitation_bonus_weight):
     mode = 'explore'
     intra_episodic_step_count = 0
+    trigger_states = []
 
     Q = np.zeros((env.num_states, env.num_actions), dtype=np.float64)
     visitation_count = np.zeros(env.num_states, dtype=np.int32)
@@ -86,7 +87,15 @@ def q_learning(env, num_episodes, alpha, gamma, epsilon, visitation_bonus_weight
             intra_episodic_step_count += 1
 
             # Informed switching
-            mode = epsilon_switching(mode, epsilon, visitation_count[state])
+            if mode == 'explore':
+                if visitation_count[state] > 1 and state not in trigger_states:
+                    print('exploit', state, episode)
+                    mode = 'exploit'
+                    trigger_states.append(state)
+            elif mode == 'exploit':
+                if visitation_count[state] <= 10000:
+                    print('explore', state, episode)
+                    mode = 'explore'
 
             next_state, reward, terminated, truncated = env.step(action)
 

@@ -67,7 +67,7 @@ def q_learning(env, num_episodes, alpha, gamma, epsilon, visitation_bonus_weight
             intra_episodic_step_count += 1
 
             # Blind switching
-            if mode == 'explore' and intra_episodic_step_count >= 15000:
+            if mode == 'explore' and intra_episodic_step_count >= 100000:
                 intra_episodic_step_count = 0
                 mode = 'exploit'
             elif mode == 'exploit' and intra_episodic_step_count >= 1000000:

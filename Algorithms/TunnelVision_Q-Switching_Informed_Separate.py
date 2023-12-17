@@ -63,9 +63,10 @@ def visualize_visitation_counts(env, visitation_count):
 def q_learning(env, num_episodes, alpha, gamma, epsilon, visitation_bonus_weight):
     mode = 'explore'
     intra_episodic_step_count = 0
+    trigger_states = []
 
     Qe = np.zeros((env.num_states, env.num_actions), dtype=np.float64)
-    Qi = np.zeros((env.num_states, env.num_actions), dtype=np.float64)
+    Qi = np.ones((env.num_states, env.num_actions), dtype=np.float64)
     visitation_count = np.zeros(env.num_states, dtype=np.int32)
     rewards = []
     training = []
@@ -87,7 +88,15 @@ def q_learning(env, num_episodes, alpha, gamma, epsilon, visitation_bonus_weight
             intra_episodic_step_count += 1
 
             # Informed switching
-            mode = epsilon_switching(mode, epsilon, visitation_count[state])
+            if mode == 'explore':
+                if visitation_count[state] > 1 and state not in trigger_states:
+                    print('exploit', state, episode)
+                    mode = 'exploit'
+                    trigger_states.append(state)
+            elif mode == 'exploit':
+                if visitation_count[state] <= 10000:
+                    print('explore', state, episode)
+                    mode = 'explore'
 
             next_state, reward, terminated, truncated = env.step(action)
 
@@ -115,7 +124,7 @@ def q_learning(env, num_episodes, alpha, gamma, epsilon, visitation_bonus_weight
 
         visitation_count[state] += 1
         epsilons.append(epsilon)
-        epsilon = 0.01 + (1 - 0.01) * math.exp(-0.00001 * episode)
+        epsilon = 0.01 + (1 - 0.01) * math.exp(-0.001 * episode)
         training.append(total_reward)
 
     # visualize_visitation_counts(env, visitation_count)
@@ -216,8 +225,8 @@ def plot_combined_subplots(average_rewards, average_training, average_epsilon, n
 
 if __name__ == "__main__":
     env = TunnelVision(env='Standard')
-    num_runs = 1
-    num_episodes = 1000000
+    num_runs = 10
+    num_episodes = 10000
     alpha = 0.1
     gamma = 0.99
     epsilon = 1  # Initial epsilon value
