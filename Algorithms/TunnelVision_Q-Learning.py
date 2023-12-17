@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import seaborn as sns
+import os
 
 
 def epsilon_greedy(Q, state, epsilon):
@@ -48,7 +49,6 @@ def q_learning(env, num_episodes, alpha, gamma, epsilon, visitation_bonus_weight
     epsilons = []
 
     for episode in range(num_episodes):
-        flag = 0
         if episode % 10 == 0:
             rewards.append(evaluate_policy(Q, env))
 
@@ -62,9 +62,6 @@ def q_learning(env, num_episodes, alpha, gamma, epsilon, visitation_bonus_weight
         while not terminated:
             episodic_step_count += 1
             next_state, reward, terminated, truncated = env.step(action)
-            if reward == 1:
-                print('goal')
-                flag = 1
             next_action = epsilon_greedy(Q, next_state, epsilon)
 
             visitation_count[state] += 1
@@ -80,12 +77,10 @@ def q_learning(env, num_episodes, alpha, gamma, epsilon, visitation_bonus_weight
 
         visitation_count[state] += 1
         epsilons.append(epsilon)
-        epsilon = 0.01 + (1 - 0.01) * math.exp(-0.00001 * episode)
+        epsilon = 0.01 + (1 - 0.01) * math.exp(-0.001 * episode)
         training.append(total_reward)
-        if flag == 1:
-            print(total_reward, episode)
 
-    visualize_visitation_counts(env, visitation_count)
+    # visualize_visitation_counts(env, visitation_count)
     return Q, rewards, training, epsilons
 
 
@@ -100,7 +95,9 @@ def print_q_values(Q, num_states, num_actions):
 
 
 def save_rewards_to_file(filename, average_rewards):
-    np.savetxt(filename, average_rewards, delimiter=',')
+    data_directory = os.path.join(os.path.dirname(__file__), '..', 'Data')
+    full_filepath = os.path.join(data_directory, os.path.basename(filename))
+    np.savetxt(full_filepath, average_rewards, delimiter=',')
 
 
 def plot_rewards(data, num_runs):
@@ -172,16 +169,20 @@ def plot_combined_subplots(average_rewards, average_training, average_epsilon, n
     plot_rewards(average_epsilon, num_runs)
     plt.title('Epsilon Decay')
 
+    # min_y, max_y = 0, 1
+    min_y, max_y = 0, max(max(np.mean(average_rewards, axis=0)), max(np.mean(average_training, axis=0)))
+    plt.subplot(1, 3, 1).set_ylim(min_y, max_y)
+    plt.subplot(1, 3, 2).set_ylim(min_y, max_y)
+
     plt.tight_layout()
     plt.show()
 
 
 if __name__ == "__main__":
     env = TunnelVision(env='Standard')
-    num_runs = 1
-    num_episodes = 1000000
-
-    alpha = 0.5
+    num_runs = 10
+    num_episodes = 10000
+    alpha = 0.1
     gamma = 0.99
     epsilon = 1  # Starting epsilon value
     visitation_bonus_weight = 0
@@ -194,4 +195,4 @@ if __name__ == "__main__":
     plot_combined_subplots(average_rewards, average_training, average_epsilon, num_runs)
 
     # Save the average rewards to a file
-    # save_rewards_to_file("../TunnelVision/TV_Q_Regular_EVAL.csv", average_rewards)
+    save_rewards_to_file("../TunnelVision/Data/TV_Q-Learning_Regular_EVAL.csv", average_rewards)

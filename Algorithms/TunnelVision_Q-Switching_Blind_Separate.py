@@ -1,6 +1,9 @@
-from TunnelVision import TunnelVision
+from Environment.TunnelVision import TunnelVision
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
+import math
+import os
 
 
 def epsilon_greedy(Q, state, epsilon):
@@ -22,6 +25,22 @@ def greedy(Q, state):
         return np.argmax(Q[state, :])
 
 
+def visualize_visitation_counts(env, visitation_count):
+    visitation_counts_grid = np.zeros((env.rows, env.cols), dtype=int)
+
+    for i in range(env.rows):
+        for j in range(env.cols):
+            state_index = env.coordinates_to_index(i, j)
+            visitation_counts_grid[i, j] = visitation_count[state_index]
+
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(visitation_counts_grid, annot=True, cmap="viridis", cbar_kws={'label': 'Visitation Counts'})
+    plt.title('Visitation Counts per State')
+    plt.xlabel('Column')
+    plt.ylabel('Row')
+    plt.show()
+
+
 def q_learning(env, num_episodes, alpha, gamma, epsilon, visitation_bonus_weight):
     mode = 'explore'
     intra_episodic_step_count = 0
@@ -30,17 +49,19 @@ def q_learning(env, num_episodes, alpha, gamma, epsilon, visitation_bonus_weight
     Qi = np.zeros((env.num_states, env.num_actions), dtype=np.float64)
     visitation_count = np.zeros(env.num_states, dtype=np.int32)
     rewards = []
+    training = []
+    epsilons = []
 
     for episode in range(num_episodes):
+        if episode % 10 == 0:
+            rewards.append(evaluate_policy(Qe, env))
+
         env.reset()
         state = 0
         total_reward = 0
         episodic_step_count = 0
         terminated = False
         action = epsilon_greedy(Qe, state, epsilon)
-
-        if episode % 10 == 0:
-            rewards.append(evaluate_policy(Qe, env))
 
         while not terminated:
             episodic_step_count += 1
@@ -79,10 +100,12 @@ def q_learning(env, num_episodes, alpha, gamma, epsilon, visitation_bonus_weight
             action = next_action
 
         visitation_count[state] += 1
-        # Epsilon decay here if needed
-        # print(total_reward, epsilon)
+        epsilons.append(epsilon)
+        epsilon = 0.01 + (1 - 0.01) * math.exp(-0.001 * episode)
+        training.append(total_reward)
 
-    return Qe, rewards
+    # visualize_visitation_counts(env, visitation_count)
+    return Qe, rewards, training, epsilons
 
 
 def print_q_values(Q, num_states, num_actions):
@@ -96,15 +119,23 @@ def print_q_values(Q, num_states, num_actions):
 
 
 def save_rewards_to_file(filename, average_rewards):
-    np.savetxt(filename, average_rewards, delimiter=',')
+    data_directory = os.path.join(os.path.dirname(__file__), '..', 'Data')
+    full_filepath = os.path.join(data_directory, os.path.basename(filename))
+    np.savetxt(full_filepath, average_rewards, delimiter=',')
 
 
-def plot_rewards(average_rewards):
-    plt.plot(average_rewards)
-    plt.title('Average Evaluation Rewards Over Runs')
-    plt.xlabel('Episodes')
-    plt.ylabel('Average Evaluation Reward')
-    plt.show()
+def plot_rewards(data, num_runs):
+    std_dev = np.std(data, axis=0)
+    average = np.mean(data, axis=0)
+
+    plt.fill_between(range(len(average)), average - std_dev, average + std_dev,
+                     alpha=0.3, label='Standard Deviation')
+    plt.plot(average)
+    plt.title(f'Average Over {num_runs} Run(s)')
+    plt.xlabel('Episode')
+    plt.ylabel('Value')
+    plt.grid()
+    # plt.show()
 
 
 def evaluate_policy(Q, env):
@@ -133,14 +164,40 @@ def evaluate_policy(Q, env):
 
 def run_experiment(env, num_runs, num_episodes, alpha, gamma, epsilon, visitation_bonus_weight):
     all_rewards = []
+    all_training = []
+    all_epsilon = []
 
     for run in range(num_runs):
-        Q, rewards = q_learning(env, num_episodes, alpha, gamma, epsilon, visitation_bonus_weight)
+        Q, rewards, training, epsilons = q_learning(env, num_episodes, alpha, gamma, epsilon, visitation_bonus_weight)
         all_rewards.append(rewards)
+        all_training.append(training)
+        all_epsilon.append(epsilons)
         print('run completed')
 
-    average_rewards = np.mean(all_rewards, axis=0)
-    return average_rewards
+    return all_rewards, all_training, all_epsilon
+
+
+def plot_combined_subplots(average_rewards, average_training, average_epsilon, num_runs):
+    plt.figure(figsize=(15, 5))
+
+    plt.subplot(1, 3, 1)
+    plot_rewards(average_rewards, num_runs)
+    plt.title('Average Evaluation Rewards')
+
+    plt.subplot(1, 3, 2)
+    plot_rewards(average_training, num_runs)
+    plt.title('Average Training Rewards')
+
+    plt.subplot(1, 3, 3)
+    plot_rewards(average_epsilon, num_runs)
+    plt.title('Epsilon Decay')
+
+    min_y, max_y = 0, max(max(np.mean(average_rewards, axis=0)), max(np.mean(average_training, axis=0)))
+    plt.subplot(1, 3, 1).set_ylim(min_y, max_y)
+    plt.subplot(1, 3, 2).set_ylim(min_y, max_y)
+
+    plt.tight_layout()
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -149,13 +206,14 @@ if __name__ == "__main__":
     num_episodes = 10000
     alpha = 0.1
     gamma = 0.99
-    epsilon = 0.1
+    epsilon = 1  # Initial epsilon value
     visitation_bonus_weight = 1
 
-    average_rewards = run_experiment(env, num_runs, num_episodes, alpha, gamma, epsilon, visitation_bonus_weight)
+    average_rewards, average_training, average_epsilon = run_experiment(env, num_runs, num_episodes, alpha, gamma,
+                                                                        epsilon, visitation_bonus_weight)
 
     # Print or save the average rewards for comparison
-    plot_rewards(average_rewards)
+    plot_combined_subplots(average_rewards, average_training, average_epsilon, num_runs)
 
     # Save the average rewards to a file
-    save_rewards_to_file("TV_Q-Switching_Blind_Separate_EVAL.csv", average_rewards)
+    save_rewards_to_file("../TunnelVision/Data/TV_Q-Switching_Blind_Separate_EVAL.csv", average_rewards)
