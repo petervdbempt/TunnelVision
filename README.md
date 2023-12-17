@@ -10,14 +10,15 @@ The TunnelVision environment contains multiple local reward maxima, represented 
 The action space for the agent is discrete (up, down, right, left) and represented by integers 0-3. The state space for the standard world also discrete; it is a grid space with size 4x12. The reward is zero for reaching toxic gas states, 0.25 for reaching inferior reward states and 1 for reaching the treasure.
 
 # Baselines
-Included in the project are five algorithms to make comparisons with: 
- Markup : * Q-Learning
-              * Regular Q-Learning with exponential epsilon-decay
-          * Q-Switching_Blind
-              * Q-Learning algorithm that switches modes using a fixed step interval
-          * Q-Switching_Blind_Separate
-              * Q-Learning algorithm that switches modes using a fixed interval, and separates extrinsic rewards from intrinsic rewards
-          * Q-Switching_Informed
-              * Q-Learning algorithm that switches modes using a heuristic
-          * Q-Switching_Blind_Separate
-              * Q-Learning algorithm that switches modes using a heuristic, and separates extrinsic rewards from intrinsic rewards
+Included in the project are five algorithms to make comparisons with:
+* Q-Learning
+* Regular Q-Learning with exponential epsilon-decay
+* Q-Switching_Blind
+* Q-Learning algorithm that switches modes using a fixed step interval
+* Q-Switching_Blind_Separate
+  * Q-Learning algorithm that switches modes using a fixed interval, and separates extrinsic rewards from intrinsic rewards
+* Q-Switching_Informed
+  * Q-Learning algorithm that switches modes using a heuristic
+* Q-Switching_Blind_Separate_Heuristic
+  * Q-Learning algorithm that switches modes using a heuristic, and separates extrinsic rewards from intrinsic rewards
+
